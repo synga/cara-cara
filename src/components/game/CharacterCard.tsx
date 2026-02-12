@@ -1,20 +1,5 @@
 import { Character } from "@/types/game";
-
-const SKIN_COLORS: Record<string, string> = {
-  white: "hsl(30, 80%, 82%)",
-  black: "hsl(25, 50%, 40%)",
-  asian: "hsl(40, 70%, 75%)",
-};
-
-const HAIR_COLORS: Record<string, string> = {
-  blonde: "hsl(45, 80%, 60%)",
-  black: "hsl(0, 0%, 15%)",
-  white: "hsl(0, 0%, 85%)",
-  red: "hsl(10, 75%, 50%)",
-  blue: "hsl(220, 75%, 55%)",
-  green: "hsl(140, 60%, 45%)",
-  none: "transparent",
-};
+import characterImages from "@/assets/characterImages";
 
 interface CharacterCardProps {
   character: Character;
@@ -24,11 +9,8 @@ interface CharacterCardProps {
 }
 
 export function CharacterCard({ character, isWrongGuess, onClick, disabled }: CharacterCardProps) {
-  const skinColor = SKIN_COLORS[character.skinColor] || SKIN_COLORS.white;
-  const hairColor = HAIR_COLORS[character.hairColor] || "transparent";
-  const initials = character.name.slice(0, 2).toUpperCase();
-
   const isInactive = !character.active || disabled;
+  const imageSrc = characterImages[character.name];
 
   return (
     <button
@@ -39,19 +21,15 @@ export function CharacterCard({ character, isWrongGuess, onClick, disabled }: Ch
         ${isInactive ? "opacity-40 cursor-not-allowed" : "hover:shadow-lg hover:scale-[1.02] hover:border-primary cursor-pointer"}
       `}
     >
-      {/* Avatar circle */}
-      <div
-        className="w-24 h-24 rounded-full flex items-center justify-center text-2xl font-bold font-display shadow-inner border-2 border-border"
-        style={{ backgroundColor: skinColor }}
-      >
-        {/* Hair indicator */}
-        {character.hairType !== "bald" && (
-          <div
-            className="absolute top-8 w-20 h-6 rounded-t-full"
-            style={{ backgroundColor: hairColor }}
-          />
+      {/* Character image */}
+      <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-border shadow-inner bg-muted">
+        {imageSrc ? (
+          <img src={imageSrc} alt={character.name} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-2xl font-bold font-display text-foreground/80">
+            {character.name.slice(0, 2).toUpperCase()}
+          </div>
         )}
-        <span className="relative z-10 text-foreground/80">{initials}</span>
       </div>
 
       {/* Character name */}
