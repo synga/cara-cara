@@ -93,10 +93,10 @@ export default function SinglePlayer() {
           {/* Confirmed traits list */}
           {gameState.confirmedTraits.length > 0 && (
             <div className="mt-3 space-y-1 pb-3">
-              <h4 className="text-xs font-bold font-display text-muted-foreground uppercase">Confirmed Traits</h4>
+              <h4 className="text-xs font-bold font-display text-muted-foreground uppercase">Trait Guesses</h4>
               {gameState.confirmedTraits.map((trait, i) => (
-                <p key={i} className="text-sm text-game-success font-semibold">
-                  ✓ {trait.label}
+                <p key={i} className={`text-sm font-semibold ${trait.isCorrect ? "text-game-success" : "text-destructive"}`}>
+                  {trait.isCorrect ? "✓" : "✗"} {trait.label}
                 </p>
               ))}
             </div>

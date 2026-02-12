@@ -28,6 +28,7 @@ export interface TraitGuess {
   category: TraitCategory;
   value: string;
   label: string;
+  isCorrect: boolean;
 }
 
 export interface GameState {
