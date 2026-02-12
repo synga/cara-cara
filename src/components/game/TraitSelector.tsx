@@ -30,14 +30,36 @@ interface TraitSelectorProps {
 }
 
 export function TraitSelector({ onSelectTrait, confirmedTraits, totalTraitGuesses, disabled }: TraitSelectorProps) {
-  const usedCategories = confirmedTraits.map((t) => t.category);
   const isLocked = (cat: TraitCategory) => LOCKED_CATEGORIES.includes(cat) && totalTraitGuesses < 2;
+
+  // Build a set of used trait values and check if a category was correctly guessed
+  const usedTraitKeys = new Set(confirmedTraits.map((t) => `${t.category}:${t.value}`));
+  const correctCategories = new Set(
+    confirmedTraits.filter((t) => t.isCorrect).map((t) => t.category)
+  );
+
+  const isValueDisabled = (category: TraitCategory, value: string) => {
+    // If the correct value was found for this category, disable all values
+    if (correctCategories.has(category)) return true;
+    // If this specific value was already guessed (wrong), disable it
+    if (usedTraitKeys.has(`${category}:${value}`)) return true;
+    return false;
+  };
+
+  const getValueVariant = (category: TraitCategory, value: string) => {
+    const key = `${category}:${value}`;
+    const trait = confirmedTraits.find((t) => t.category === category && t.value === value);
+    if (trait) {
+      return trait.isCorrect ? "default" : "secondary";
+    }
+    if (correctCategories.has(category)) return "secondary";
+    return "outline";
+  };
 
   return (
     <div className="w-full overflow-x-auto">
       <div className="flex gap-4 min-w-max p-2">
         {TRAIT_OPTIONS.map((trait) => {
-          const alreadyUsed = usedCategories.includes(trait.category);
           const locked = isLocked(trait.category);
 
           return (
@@ -48,18 +70,21 @@ export function TraitSelector({ onSelectTrait, confirmedTraits, totalTraitGuesse
                 </h4>
                 {locked && <Lock className="w-3 h-3 text-muted-foreground" />}
               </div>
-              {trait.values.map((value) => (
-                <Button
-                  key={value}
-                  size="sm"
-                  variant={alreadyUsed ? "secondary" : "outline"}
-                  disabled={disabled || alreadyUsed || locked}
-                  onClick={() => onSelectTrait(trait.category, value)}
-                  className="text-xs capitalize h-7 justify-start"
-                >
-                  {value}
-                </Button>
-              ))}
+              {trait.values.map((value) => {
+                const valueDisabled = isValueDisabled(trait.category, value);
+                return (
+                  <Button
+                    key={value}
+                    size="sm"
+                    variant={getValueVariant(trait.category, value)}
+                    disabled={disabled || valueDisabled || locked}
+                    onClick={() => onSelectTrait(trait.category, value)}
+                    className="text-xs capitalize h-7 justify-start"
+                  >
+                    {value}
+                  </Button>
+                );
+              })}
               {locked && (
                 <p className="text-[10px] text-muted-foreground italic">
                   Unlocks after 2 guesses

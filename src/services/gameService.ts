@@ -12,19 +12,34 @@ const TRAIT_LABELS: Record<TraitCategory, string> = {
   mouth: "Mouth",
 };
 
-function formatTraitMessage(category: TraitCategory, value: string): string {
-  const labels: Record<TraitCategory, (v: string) => string> = {
-    sex: (v) => `The selected character is ${v === "male" ? "a man" : "a woman"}`,
-    skinColor: (v) => `The selected character has ${v} skin`,
-    hairType: (v) => `The selected character has ${v} hair`,
-    hairColor: (v) => `The selected character has ${v} hair color`,
-    eyeColor: (v) => `The selected character has ${v} eyes`,
-    glassesColor: (v) => v === "none" ? "The selected character does not wear glasses" : `The selected character wears ${v} glasses`,
-    beardType: (v) => v === "none" ? "The selected character has no beard" : `The selected character has a ${v} beard`,
-    beardColor: (v) => v === "none" ? "The selected character has no beard color" : `The selected character has a ${v} colored beard`,
-    mouth: (v) => `The selected character has a ${v} expression`,
-  };
-  return labels[category](value);
+function formatTraitMessage(category: TraitCategory, value: string, isCorrect: boolean): string {
+  if (isCorrect) {
+    const labels: Record<TraitCategory, (v: string) => string> = {
+      sex: (v) => `The character is ${v === "male" ? "a man" : "a woman"}`,
+      skinColor: (v) => `The character has ${v} skin`,
+      hairType: (v) => `The character has ${v} hair`,
+      hairColor: (v) => `The character has ${v} hair color`,
+      eyeColor: (v) => `The character has ${v} eyes`,
+      glassesColor: (v) => v === "none" ? "The character does not wear glasses" : `The character wears ${v} glasses`,
+      beardType: (v) => v === "none" ? "The character has no beard" : `The character has a ${v} beard`,
+      beardColor: (v) => v === "none" ? "The character has no beard color" : `The character has a ${v} colored beard`,
+      mouth: (v) => `The character has a ${v} expression`,
+    };
+    return labels[category](value);
+  } else {
+    const labels: Record<TraitCategory, (v: string) => string> = {
+      sex: (v) => `The character is NOT ${v === "male" ? "a man" : "a woman"}`,
+      skinColor: (v) => `The character does NOT have ${v} skin`,
+      hairType: (v) => `The character does NOT have ${v} hair`,
+      hairColor: (v) => `The character does NOT have ${v} hair color`,
+      eyeColor: (v) => `The character does NOT have ${v} eyes`,
+      glassesColor: (v) => v === "none" ? "The character DOES wear glasses" : `The character does NOT wear ${v} glasses`,
+      beardType: (v) => v === "none" ? "The character DOES have a beard" : `The character does NOT have a ${v} beard`,
+      beardColor: (v) => v === "none" ? "The character DOES have a beard color" : `The character does NOT have a ${v} colored beard`,
+      mouth: (v) => `The character does NOT have a ${v} expression`,
+    };
+    return labels[category](value);
+  }
 }
 
 export const localGameService: GameService = {
@@ -49,23 +64,30 @@ export const localGameService: GameService = {
     const isMatch = state.mysteryCharacter[category] === value;
     const newTotalGuesses = state.totalTraitGuesses + 1;
 
-    const updatedCharacters = state.characters.map((c) => {
-      if (!c.active) return c;
-      if (isMatch) {
-        return { ...c, active: c[category] === value };
-      } else {
-        return { ...c, active: c[category] !== value };
-      }
-    });
+    let updatedCharacters: Character[];
 
-    const label = formatTraitMessage(category, isMatch ? value : state.mysteryCharacter[category]);
+    if (isMatch) {
+      // Correct: eliminate all characters that DON'T have this trait
+      updatedCharacters = state.characters.map((c) => {
+        if (!c.active) return c;
+        return { ...c, active: c[category] === value };
+      });
+    } else {
+      // Wrong: eliminate all characters that DO have this guessed trait
+      updatedCharacters = state.characters.map((c) => {
+        if (!c.active) return c;
+        return { ...c, active: c[category] !== value };
+      });
+    }
+
+    const label = formatTraitMessage(category, value, isMatch);
 
     return {
       ...state,
       characters: updatedCharacters,
       confirmedTraits: [
         ...state.confirmedTraits,
-        { category, value: state.mysteryCharacter[category], label },
+        { category, value, label, isCorrect: isMatch },
       ],
       totalTraitGuesses: newTotalGuesses,
     };
