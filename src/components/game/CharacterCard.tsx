@@ -16,13 +16,13 @@ export function CharacterCard({ character, isWrongGuess, onClick, disabled }: Ch
     <button
       onClick={onClick}
       disabled={isInactive}
-      className={`relative w-[200px] h-[300px] rounded-xl border-2 border-border bg-card shadow-md
-        transition-all duration-300 overflow-hidden flex flex-col items-center justify-center
+      className={`relative w-[200px] min-h-[340px] rounded-xl border-2 border-border bg-card shadow-md
+        transition-all duration-300 overflow-hidden flex flex-col items-center pt-4 pb-3
         ${isInactive ? "opacity-40 cursor-not-allowed" : "hover:shadow-lg hover:scale-[1.02] hover:border-primary cursor-pointer"}
       `}
     >
       {/* Character image */}
-      <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-border shadow-inner bg-muted">
+      <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-border shadow-inner bg-muted flex-shrink-0">
         {imageSrc ? (
           <img src={imageSrc} alt={character.name} className="w-full h-full object-cover" />
         ) : (
@@ -33,18 +33,24 @@ export function CharacterCard({ character, isWrongGuess, onClick, disabled }: Ch
       </div>
 
       {/* Character name */}
-      <p className="mt-3 text-sm font-bold font-display text-card-foreground">{character.name}</p>
+      <p className="mt-2 text-sm font-bold font-display text-card-foreground">{character.name}</p>
 
-      {/* Trait pills */}
-      <div className="mt-2 flex flex-wrap gap-1 justify-center px-2">
-        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">{character.sex}</span>
-        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">{character.hairType}</span>
-        {character.glassesColor !== "none" && (
-          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">👓</span>
-        )}
-        {character.beardType !== "none" && (
-          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">🧔</span>
-        )}
+      {/* All traits */}
+      <div className="mt-2 flex flex-col gap-0.5 px-3 w-full text-left">
+        {[
+          { label: "Sex", value: character.sex },
+          { label: "Skin", value: character.skinColor },
+          { label: "Hair", value: `${character.hairColor} ${character.hairType}` },
+          { label: "Eyes", value: character.eyeColor },
+          { label: "Glasses", value: character.glassesColor },
+          { label: "Beard", value: character.beardType === "none" ? "none" : `${character.beardColor} ${character.beardType}` },
+          { label: "Mouth", value: character.mouth },
+        ].map((t) => (
+          <div key={t.label} className="flex justify-between text-[10px] leading-tight">
+            <span className="font-semibold text-muted-foreground">{t.label}</span>
+            <span className="text-card-foreground capitalize">{t.value}</span>
+          </div>
+        ))}
       </div>
 
       {/* Wrong guess overlay */}
